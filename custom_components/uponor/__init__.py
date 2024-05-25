@@ -14,7 +14,7 @@ from homeassistant.helpers.discovery import async_load_platform
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from UponorJnap import UponorJnap
+from .uponor_jnap import UponorJnap
 
 from .const import (
     DOMAIN,

@@ -3,7 +3,7 @@ import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 import logging
 
-from UponorJnap import UponorJnap
+from .uponor_jnap import UponorJnap
 
 from homeassistant.const import (
     CONF_HOST,
