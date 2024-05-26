@@ -67,6 +67,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     hass.services.async_register(DOMAIN, "set_variable", handle_set_variable)
 
     hass.async_create_task(hass.config_entries.async_forward_entry_setup(config_entry, "climate"))
+    hass.async_create_task(hass.config_entries.async_forward_entry_setup(config_entry, "sensor"))
     hass.async_create_task(hass.config_entries.async_forward_entry_setup(config_entry, "switch"))
 
     async_track_time_interval(hass, state_proxy.async_update, SCAN_INTERVAL)
