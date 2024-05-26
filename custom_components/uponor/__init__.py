@@ -11,7 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.discovery import async_load_platform
-from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.helpers.dispatcher import async_dispatcher_send, dispatcher_send
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from .uponor_jnap import UponorJnap
@@ -153,7 +153,7 @@ class UponorStateProxy:
         setpoint = int(temp * 18 + self.get_active_setback(thermostat, temp) + 320)
         self._client.send_data({var: setpoint})
         self._data[var] = setpoint
-        async_dispatcher_send(self._hass, SIGNAL_UPONOR_STATE_UPDATE)
+        dispatcher_send(self._hass, SIGNAL_UPONOR_STATE_UPDATE)
 
     def get_active_setback(self, thermostat, temp):
         if temp == self.get_min_limit(thermostat) or temp == self.get_max_limit(thermostat):
