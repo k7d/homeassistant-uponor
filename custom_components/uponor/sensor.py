@@ -3,6 +3,7 @@ from homeassistant.const import (UnitOfTemperature, PERCENTAGE)
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import Entity
 from homeassistant.core import callback
+import math
 from logging import getLogger
 from .const import (
     DOMAIN,
@@ -23,8 +24,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             room_name = config_entry.data[thermostat.lower()]
         else:
             room_name = state_proxy.get_room_name(thermostat)
-        entities.append(UponorThermostatTemperatureSensor(state_proxy, thermostat, room_name))
-        entities.append(UponorThermostatHumiditySensor(state_proxy, thermostat, room_name))
+        entities.append(UponorTemperatureSensor(state_proxy, thermostat, room_name))
+        entities.append(UponorHumiditySensor(state_proxy, thermostat, room_name))
+        entities.append(UponorDewPointSensor(state_proxy, thermostat, room_name))
     if entities:
         async_add_entities(entities, update_before_add=False)
 
@@ -62,7 +64,7 @@ class UponorSensor(Entity):
         return self._available
 
 
-class UponorThermostatTemperatureSensor(UponorSensor):
+class UponorTemperatureSensor(UponorSensor):
     @property
     def unique_id(self):
         return f"{self._state_proxy.get_thermostat_id(self._thermostat)}_temperature"
@@ -90,7 +92,7 @@ class UponorThermostatTemperatureSensor(UponorSensor):
         return self._state_proxy.get_temperature(self._thermostat)
 
 
-class UponorThermostatHumiditySensor(UponorSensor):
+class UponorHumiditySensor(UponorSensor):
     @property
     def unique_id(self):
         return f"{self._state_proxy.get_thermostat_id(self._thermostat)}_humidity"
@@ -120,3 +122,45 @@ class UponorThermostatHumiditySensor(UponorSensor):
     @property
     def state(self):
         return self._state_proxy.get_humidity(self._thermostat)
+
+class UponorDewPointSensor(UponorSensor):
+    @property
+    def unique_id(self):
+        return f"{self._state_proxy.get_thermostat_id(self._thermostat)}_dew_point"
+
+    @property
+    def name(self):
+        return f"{self._room_name} Dew Point"
+
+    @property
+    def icon(self):
+        return 'mdi:thermometer-water'
+
+    @property
+    def available(self):
+        return self._available
+
+    # ** Static **
+    @property
+    def unit_of_measurement(self):
+        return UnitOfTemperature.CELSIUS
+
+    @property
+    def device_class(self):
+        return SensorDeviceClass.TEMPERATURE
+
+    # ** State **
+    @property
+    def state(self):
+        temperature = self._state_proxy.get_temperature(self._thermostat)
+        humidity = self._state_proxy.get_humidity(self._thermostat)
+        # Constants for the Magnus formula
+        a = 17.27
+        b = 237.7
+        # Convert relative humidity to a decimal
+        rh_decimal = humidity / 100.0
+        # Calculate alpha
+        alpha = ((a * temperature) / (b + temperature)) + math.log(rh_decimal)
+        # Calculate dew point
+        dew_point = (b * alpha) / (a - alpha)
+        return dew_point
