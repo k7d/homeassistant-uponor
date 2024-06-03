@@ -13,6 +13,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.discovery import async_load_platform
 from homeassistant.helpers.dispatcher import async_dispatcher_send, dispatcher_send
 from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from .uponor_jnap import UponorJnap
 
@@ -48,7 +49,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     host = config_entry.data[CONF_HOST]
-    store = hass.helpers.storage.Store(STORAGE_VERSION, STORAGE_KEY)
+    store = Store(hass, STORAGE_VERSION, STORAGE_KEY)
 
     state_proxy = await hass.async_add_executor_job(lambda: UponorStateProxy(hass, host, store))
     await state_proxy.async_update(0)
@@ -76,7 +77,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
 
 class UponorStateProxy:
-    def __init__(self, hass, host, store):
+    def __init__(self, hass: HomeAssistant, host: str, store: Store):
         self._hass = hass
         self._client = UponorJnap(host)
         self._store = store
