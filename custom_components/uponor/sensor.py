@@ -162,5 +162,5 @@ class UponorDewPointSensor(UponorSensor):
         # Calculate alpha
         alpha = ((a * temperature) / (b + temperature)) + math.log(rh_decimal)
         # Calculate dew point
-        dew_point = (b * alpha) / (a - alpha)
+        dew_point = round((b * alpha) / (a - alpha), 1)
         return dew_point
