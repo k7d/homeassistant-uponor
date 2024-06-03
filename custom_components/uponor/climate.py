@@ -42,6 +42,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 class UponorClimate(ClimateEntity):
 
+    _enable_turn_on_off_backwards_compatibility = False
+
     def __init__(self, state_proxy, thermostat, name):
         self._state_proxy = state_proxy
         self._thermostat = thermostat
@@ -71,10 +73,11 @@ class UponorClimate(ClimateEntity):
         self.async_schedule_update_ha_state(True)
 
     @property
-    def supported_features(self):
+    def supported_features(self) -> ClimateEntityFeature:
         if self._is_on:
-            return ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
-        return 0
+            return ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE | ClimateEntityFeature.TURN_OFF
+        else:
+            return ClimateEntityFeature.TURN_ON
 
     @property
     def hvac_action(self):
